@@ -25,10 +25,21 @@ typedef char symbol;
 
 
 /// Interface used to dump the contents of the Automata's internal graph
+/// Edges are added explicitly and vertices are implicitly guessed from the edges, there are no unconnected vertices
 struct GraphDump {
+	/// Called before adding any edges of the graph
 	virtual void start() = 0;
+
+	/// Add an edge between two vertices, will be called multiple times for the same edge
+	/// @param from - label of the start vertex
+	/// @param to - label of the end vertex
+	/// @param label - the name of the edge (one symbol)
 	virtual void addEdge(const std::string &from, const std::string &to, const std::string &label) = 0;
+
+	/// Called when all data is dumped
 	virtual void done() = 0;
+
+	~GraphDump() {}
 };
 
 /// The implementation of the automata recognizing the prefix/suffixes

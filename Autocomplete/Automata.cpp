@@ -4,14 +4,20 @@
 namespace
 {
 
+/// Combine two 64bit hash values and produce new hash
 inline size_t hashCombine(size_t a, size_t b) {
 	return a ^ (b + 0x9e3779b9 + (a<<6) + (a>>2));
 }
 
+/// Combine two 32bit hash values to produce new 64bit hash
 inline size_t hashCombine(int a, int b) {
 	return a | (size_t(b) << 32);
 }
 
+/// Hash a block of memory
+/// @param data - pointer to the start
+/// @param size - number of bytes to hash
+/// @return the hash of the block
 inline size_t hash(const char *data, int size) {
 	size_t hash = 0xcbf29ce484222325ull;
 	const size_t prime = 0x100000001b3ull;
@@ -24,11 +30,16 @@ inline size_t hash(const char *data, int size) {
 	return hash;
 }
 
+/// Utility to check if a set contains an element
 template <typename T>
 inline bool contains(const std::unordered_set<T> &set, const T &value) {
 	return set.find(value) != set.end();
 }
 
+/// Check if a string is a prefix of another
+/// @param prefix - the needled
+/// @param string - the haystack
+/// @return true if string begins with prefix
 bool isPrefix(const std::string &prefix, const std::string &string) {
 	if (prefix.size() > string.size()) {
 		return false;
