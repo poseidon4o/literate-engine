@@ -95,6 +95,22 @@ struct Automata {
 	/// @return true if graphDump was not nullptr, false otherwise
 	bool dumpGraph(GraphDump *graphDump) const;
 
+	/// Get the number of states with in the internal graph
+	/// @return - the number of states, at least 1
+	int getNumberOfStates() const {
+		return allStates.size() - freeStates.size();
+	}
+
+	/// Number of words recognized by the automata
+	int getNumberOfWords() const {
+		return words.size();
+	}
+
+	/// Number of all symbols in all words
+	int getNumberOfTotalSymbols() const {
+		return totalSymbols;
+	}
+
 	/// Slow check for all prefixes and all suffixes in the automata
 	/// NOTE: Does nothing in Release
 	bool runVerify() const;
@@ -249,7 +265,7 @@ private:
 				it->second[to] = label;
 				return true;
 			}
-			ac_assert(edge->second == label);
+			//ac_assert(edge->second == label);
 			return false;
 		}
 
@@ -288,6 +304,7 @@ private:
 
 	/// Instead of allocating new states directly on the heap, they are added to this list
 	/// This allows de-allocation to be easier to implement (the isn't any)
+	/// TODO: this could be deuque but to utilize freeStates there needs to be a way to obtain index/iterator in deque from pointer to element
 	std::list<State> allStates;
 	/// A queue of states that were replaced and are therefor available to be used again
 	/// When "allocating" new state, first freeStates is checked and if empty then new state is added to allStates
@@ -301,6 +318,8 @@ private:
 	WordList words;
 	/// Default implementation of GraphDump to save the internal representation in graph-viz format
 	DotGraphViz dotGraphViz;
+	/// The total number of symbols in all words
+	int totalSymbols = 0;
 
 	/// Builds the automata from the word list
 	void build();

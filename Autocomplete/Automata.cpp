@@ -65,6 +65,7 @@ void Automata::initEmpty() {
 	rootState = &allStates.front();
 	registry.clear();
 	words.clear();
+	totalSymbols = 0;
 }
 
 void Automata::build() {
@@ -75,6 +76,8 @@ void Automata::build() {
 	State *start = nullptr;
 	int steps = 0;
 	for (int c = 0; c < words.size(); c++) {
+		totalSymbols += words[c].size();
+
 		steps = 0;
 		start = addWordPrefix(c, steps);
 		ac_assert(start && "Must never be null");

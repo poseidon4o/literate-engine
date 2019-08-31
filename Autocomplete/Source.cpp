@@ -27,8 +27,8 @@ int main(int, char *[]) {
 
 		std::cout << "Building ..." << std::endl;
 		std::vector<std::string> testWords = {
-			"follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
-			"test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te"
+			// "follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
+			// "test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te"
 		};
 		dict.buildFromWordList(testWords.empty() ? words : testWords);
 
@@ -37,6 +37,10 @@ int main(int, char *[]) {
 
 		std::cout << "Running tests ..." << std::endl;
 		ac_assert(dict.runVerify());
+
+		std::cout << "States in automata: " << dict.getNumberOfStates() << std::endl;
+		std::cout << "Words in automata: " << dict.getNumberOfWords() << std::endl;
+		std::cout << "Symbols in automata: " << dict.getNumberOfTotalSymbols() << std::endl;
 	}
 
 	std::string input;
