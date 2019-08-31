@@ -69,20 +69,19 @@ void Automata::initEmpty() {
 
 void Automata::build() {
 	std::sort(words.begin(), words.end());
+	const WordList::iterator it = std::unique(words.begin(), words.end());
+	words.erase(it, words.end());
 
 	State *start = nullptr;
 	int steps = 0;
 	for (int c = 0; c < words.size(); c++) {
-		if (c >= 11) {
-			// break;
-		}
 		steps = 0;
 		start = addWordPrefix(c, steps);
 		ac_assert(start && "Must never be null");
 
-		const bool isFinal = steps + 1 == words[c].size();
+		const bool isFinal = steps == words[c].size();
 		if (isFinal) {
-			start->markAsFinal();
+			start->setIsFinalState();
 		}
 
 		if (start && c > 0) {
@@ -93,9 +92,11 @@ void Automata::build() {
 			createNodes(start, c, steps);
 		}
 	}
+
 	if (start && steps < words.back().size()) {
 		minimize(start, words.size() - 1, steps);
 	}
+
 	registry.clear();
 }
 
@@ -223,7 +224,7 @@ void Automata::createNodes(State *start, int wordIndex, int offset) {
 		start->addConnection(word[c], newState);
 		start = newState;
 	}
-	start->markAsFinal();
+	start->setIsFinalState();
 }
 
 bool Automata::isDetached(State *state) {
@@ -275,7 +276,7 @@ Automata::State *Automata::State::findConnection(symbol transition) const {
 	return it->second;
 }
 
-void Automata::State::markAsFinal() {
+void Automata::State::setIsFinalState() {
 	isFinal = true;
 }
 

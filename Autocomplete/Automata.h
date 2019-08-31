@@ -118,7 +118,7 @@ private:
 		State *findConnection(symbol transition) const;
 
 		/// Sets the final flag to true for this state
-		void markAsFinal();
+		void setIsFinalState();
 
 		/// Check if this state is final
 		/// @return true if there is some word ending on this state, false otherwise

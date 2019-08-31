@@ -27,8 +27,8 @@ int main(int, char *[]) {
 
 		std::cout << "Building ..." << std::endl;
 		std::vector<std::string> testWords = {
-			"follow", "feast", "fear", "fart", "farting", "pestering", "pester"
-			// "test", "tests", "testing", "tester", "teaser", "training", "pining"
+			"follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
+			"test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te"
 		};
 		dict.buildFromWordList(testWords.empty() ? words : testWords);
 
