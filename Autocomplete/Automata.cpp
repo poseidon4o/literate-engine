@@ -77,6 +77,9 @@ void Automata::build() {
 	int steps = 0;
 	for (int c = 0; c < words.size(); c++) {
 		totalSymbols += words[c].size();
+		if (words[c].empty()) {
+			continue;
+		}
 
 		steps = 0;
 		start = addWordPrefix(c, steps);
@@ -190,9 +193,6 @@ const Automata::State *Automata::findState(const std::string &prefix) const {
 }
 
 Automata::State *Automata::addWordPrefix(int wordIndex, int &steps) {
-	if (words[wordIndex].empty()) {
-		return nullptr;
-	}
 	steps = 0;
 	
 	State *iterator = rootState;
@@ -411,5 +411,3 @@ void Automata::State::rebuildSuffixesHash(const Automata &automata) {
 		);
 	}
 }
-
-

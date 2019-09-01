@@ -265,7 +265,7 @@ private:
 				it->second[to] = label;
 				return true;
 			}
-			//ac_assert(edge->second == label);
+
 			return false;
 		}
 
