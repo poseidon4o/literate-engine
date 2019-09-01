@@ -326,7 +326,13 @@ bool Automata::State::hasChild(const State *state) const {
 	return false;
 }
 
-size_t Automata::State::getHash() const {
+size_t Automata::State::getHash(const Automata &automata) const {
+	if (hashConnections == 42) {
+		rebuildConnectionsHash();
+	}
+	if (hashSuffixes == 42) {
+		rebuildSuffixesHash(automata);
+	}
 	return hashCombine(hashConnections, hashCombine(size_t(isFinal), hashSuffixes));
 }
 
@@ -385,7 +391,7 @@ void Automata::State::dumpGraph(GraphDump &graphDump) const {
 	}
 }
 
-void Automata::State::rebuildConnectionsHash() {
+void Automata::State::rebuildConnectionsHash() const {
 	hashConnections = 42;
 	const std::hash<symbol> symbolHasher;
 
@@ -400,7 +406,7 @@ void Automata::State::rebuildConnectionsHash() {
 	}
 }
 
-void Automata::State::rebuildSuffixesHash(const Automata &automata) {
+void Automata::State::rebuildSuffixesHash(const Automata &automata) const {
 	hashSuffixes = 42;
 
 	for (const auto &loc : suffixes) {

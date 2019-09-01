@@ -169,7 +169,7 @@ private:
 
 		/// Get the hash of this state's connections, suffixes, and final flag
 		/// @return the hash
-		size_t getHash() const;
+		size_t getHash(const Automata &automata) const;
 
 		/// Get the number of connections starting from this state
 		/// @return - the number of connections
@@ -204,19 +204,19 @@ private:
 		/// Flag set to true if some word ends with this state
 		bool isFinal = false;
 		/// Hash of this state's connections, used for de-duplication of states in Automata::registry
-		size_t hashConnections = 42;
+		mutable size_t hashConnections = 42;
 		/// Hash of this state's suffixes, used for de-duplication of states in Automata::registry
-		size_t hashSuffixes = 42;
+		mutable size_t hashSuffixes = 42;
 
 		/// Build unique string for this State used for GraphDump
 		std::string buildIdString() const;
 
 		/// Re-compute the hashConnections member, needs to be called when connections change
-		void rebuildConnectionsHash();
+		void rebuildConnectionsHash() const;
 
 		/// Re-compute the hashSuffixes member, needs to be called when suffixes change
 		/// @param automata - the automata is needed because suffixes are stored as indices in the word list
-		void rebuildSuffixesHash(const Automata &automata);
+		void rebuildSuffixesHash(const Automata &automata) const;
 	};
 
 	/// Default implementation dumping the data into graph-viz format
@@ -287,14 +287,16 @@ private:
 	struct StatePtr {
 		Automata *automata = nullptr;
 		State *state = nullptr;
+
 		bool operator==(const StatePtr &other) const {
 			ac_assert(state);
 			ac_assert(other.state);
 			return state->slowEqual(*automata, *other.state);
 		}
+
 		struct Hasher {
 			size_t operator()(const StatePtr &statePtr) const {
-				return statePtr.state->getHash();
+				return statePtr.state->getHash(*statePtr.automata);
 			}
 		};
 	};
