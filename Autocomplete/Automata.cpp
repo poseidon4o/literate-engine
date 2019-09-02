@@ -294,18 +294,23 @@ void Automata::State::addConnection(symbol transition, State *child) {
 }
 
 void Automata::State::appendSuffix(const Automata &automata, int wordIndex, int offset) {
-	const SuffixMap::const_iterator it = suffixes.find(wordIndex);
+	//const SuffixList::const_iterator it = suffixes.find(wordIndex);
+#if AC_ASSERT_ENABLED
+	const SuffixList::const_iterator it = std::find_if(suffixes.begin(), suffixes.end(), [wordIndex](const Suffix &suf) { return suf.wordIndex == wordIndex; });
 	ac_assert(it == suffixes.end() && "Can't duplicate suffixes");
-	suffixes[wordIndex] = offset;
+#endif
+	// suffixes[wordIndex] = offset;
+	suffixes.emplace_back(wordIndex, offset);
 	hashSuffixes = 42;
 }
 
 void Automata::State::initSuffixesFrom(const Automata &automata, const State &parent, symbol transition) {
 	suffixes.clear();
 	for (const auto &item : parent.suffixes) {
-		const std::string &word = automata.getWord(item.first);
-		if (word[item.second] == transition && item.second + 1 < word.length()) {
-			suffixes[item.first] = item.second + 1;
+		const std::string &word = automata.getWord(item.wordIndex);
+		if (word[item.offset] == transition && item.offset + 1 < word.length()) {
+			suffixes.emplace_back(item.wordIndex, item.offset + 1);
+			// suffixes[item.wordIndex] = item.offset+ 1;
 		}
 	}
 	hashSuffixes = 42;
@@ -342,8 +347,8 @@ int Automata::State::getNumChildren() const {
 
 void Automata::State::buildSuffixes(const Automata &automata, StringSet &stringSuffixes) const {
 	for (const auto &suffix : suffixes) {
-		const std::string &word = automata.getWord(suffix.first);
-		stringSuffixes.insert(word.substr(suffix.second));
+		const std::string &word = automata.getWord(suffix.wordIndex);
+		stringSuffixes.insert(word.substr(suffix.offset));
 	}
 }
 
@@ -418,8 +423,8 @@ void Automata::State::rebuildSuffixesHash(const Automata &automata) const {
 	// sum =  11 316 897
 
 	for (const auto &suffix : suffixes) {
-		const std::string &word = automata.getWord(suffix.first);
-		for (int c = suffix.second; c < word.size(); c++) {
+		const std::string &word = automata.getWord(suffix.wordIndex);
+		for (int c = suffix.offset; c < word.size(); c++) {
 			hashSuffixes += word[c];
 		}
 	}

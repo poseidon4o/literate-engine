@@ -59,7 +59,7 @@ int main(int, char *[]) {
 		"lists/naughty.txt"
 	};
 
-#if 1
+#if 0
 	/*
 	 * lists/1k.txt states: 964 / 2.24
 	 * lists/3k.txt states: 2621 / 9.54
@@ -74,7 +74,7 @@ int main(int, char *[]) {
 		}
 
 		timer::ms_t::rep total = 0;
-		const int repeat = 50;
+		const int repeat = 25;
 		for (int c = 0; c < repeat; c++) {
 			Automata dict;
 			{
@@ -97,7 +97,7 @@ int main(int, char *[]) {
 	return 0;
 #endif
 
-	std::string &fileName = files[0];
+	std::string &fileName = files[2];
 	Automata dict;
 	{
 		Automata::WordList words;

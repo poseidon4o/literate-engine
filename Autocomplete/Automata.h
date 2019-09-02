@@ -126,10 +126,20 @@ private:
 	/// Internal structure that holds a single state of the automata
 	struct State {
 		/// Both need to be ordered so that their hash depends on contents only and not on order of insertion
+		/// TODO: Change to hash map and last symbol
 		typedef std::map<symbol, State *> ConnectionMap;
 
 		/// Maps word index to offset in that word in the Automata word list, thus avoiding storing actual words in each state
-		typedef std::map<int, int> SuffixMap;
+		struct Suffix {
+			int wordIndex = -1;
+			int offset = -1;
+
+			Suffix(int wordIndex, int offset)
+				: wordIndex(wordIndex)
+				, offset(offset)
+			{}
+		};
+		typedef std::vector<Suffix> SuffixList;
 
 		/// Find a child connection for a symbol, can be nullptr if not found
 		/// @param transition - the symbol trying to find in the connections
@@ -196,6 +206,10 @@ private:
 		/// @param graphDump - implementation of GraphDump
 		void dumpGraph(GraphDump &graphDump) const;
 
+		State() {
+			suffixes.reserve(32);
+		}
+
 	private:
 		/// All transitions for this state, maps symbol to State *
 		ConnectionMap connections;
@@ -203,7 +217,7 @@ private:
 		/// Suffixes are not stored as strings, but instead as a pair of indices:
 		/// key = index in the Automata::words member
 		/// value = the offset in this word where the suffix starts
-		SuffixMap suffixes;
+		SuffixList suffixes;
 		/// Flag set to true if some word ends with this state
 		bool isFinal = false;
 		/// Hash of this state's connections, used for de-duplication of states in Automata::registry
