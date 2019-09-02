@@ -61,9 +61,9 @@ int main(int, char *[]) {
 
 #if 0
 	/*
-	 * lists/1k.txt states: 964 / 1.5
-	 * lists/3k.txt states: 2621 / 6.2
-	 * lists/58k.txt states: 27025 / 182.9
+	 * lists/1k.txt states: 964 / 2.24
+	 * lists/3k.txt states: 2621 / 9.54
+	 * lists/58k.txt states: 27025 / 228.12
 	 * lists/naughty.txt states: 925 / 0
 	 */
 	for (const std::string &file : files) {
@@ -95,7 +95,7 @@ int main(int, char *[]) {
 	return 0;
 #endif
 
-	std::string &fileName = files[1];
+	std::string &fileName = files[0];
 	Automata dict;
 	{
 		Automata::WordList words;
@@ -107,8 +107,8 @@ int main(int, char *[]) {
 		std::cout << "Building ..." << std::endl;
 		std::vector<std::string> testWords = {
 			// "follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
-			// "test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te"
-			"aAZ", "bAB", "eAB", "eAZ", // TODO: fix this case
+			// "test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te",
+			// "aAZ", "bAB", "eAB", "eAZ",
 		};
 		dict.buildFromWordList(std::move(testWords.empty() ? words : testWords));
 

@@ -1,6 +1,5 @@
 #include "Automata.h"
 
-
 namespace
 {
 
@@ -359,6 +358,10 @@ bool Automata::State::slowEqual(const Automata &automata, const State &other) co
 		return true;
 	}
 
+	if (getHash(automata) != other.getHash(automata)) {
+		return false;
+	}
+
 	if (isFinal != other.isFinal) {
 		return false;
 	}
@@ -368,7 +371,7 @@ bool Automata::State::slowEqual(const Automata &automata, const State &other) co
 	}
 
 	// needed because "ing" can be present in both but it can be from different words
-	// TODO: this does not solve anything, the problem is that the hash might be different for the same suffixes
+	// suffixesHash depends only on the content so if the hash is the same, we need to handle collisions
 	StringSet mine, others;
 	buildSuffixes(automata, mine);
 	other.buildSuffixes(automata, others);
@@ -410,11 +413,19 @@ void Automata::State::rebuildConnectionsHash() const {
 void Automata::State::rebuildSuffixesHash(const Automata &automata) const {
 	hashSuffixes = 42;
 
-	for (const auto &loc : suffixes) {
-		const std::string &word = automata.getWord(loc.first);
+	// Suffixes might not be in sorted order, so to compute consistent hashes sort them first
+	// TODO: change hash to not depend on order only on content
+	std::vector<std::string> suffixSet;
+	for (const auto &suffix : suffixes) {
+		const std::string &word = automata.getWord(suffix.first);
+		suffixSet.emplace_back(word.substr(suffix.second));
+	}
+	std::sort(suffixSet.begin(), suffixSet.end());
+
+	for (const std::string &suffix : suffixSet) {
 		hashSuffixes = hashCombine(
 			hashSuffixes,
-			hash(word.data() + loc.second, word.size() - loc.second)
+			std::hash<std::string>()(suffix)
 		);
 	}
 }
