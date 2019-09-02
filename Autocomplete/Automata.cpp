@@ -368,6 +368,7 @@ bool Automata::State::slowEqual(const Automata &automata, const State &other) co
 	}
 
 	// needed because "ing" can be present in both but it can be from different words
+	// TODO: this does not solve anything, the problem is that the hash might be different for the same suffixes
 	StringSet mine, others;
 	buildSuffixes(automata, mine);
 	other.buildSuffixes(automata, others);

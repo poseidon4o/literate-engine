@@ -59,7 +59,7 @@ int main(int, char *[]) {
 		"lists/naughty.txt"
 	};
 
-#if 1
+#if 0
 	/*
 	 * lists/1k.txt states: 964 / 1.5
 	 * lists/3k.txt states: 2621 / 6.2
@@ -108,6 +108,7 @@ int main(int, char *[]) {
 		std::vector<std::string> testWords = {
 			// "follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
 			// "test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te"
+			"aAZ", "bAB", "eAB", "eAZ", // TODO: fix this case
 		};
 		dict.buildFromWordList(std::move(testWords.empty() ? words : testWords));
 
