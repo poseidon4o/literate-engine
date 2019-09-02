@@ -29,15 +29,24 @@ struct timer {
 
 	std::string name;
 	time_point start;
+	bool print = true;
 
 	timer(const std::string &name)
 		: name(name)
 		, start(clock_t::now())
 	{}
 
-	~timer() {
+	ms_t::rep getElapsed() {
 		const ms_t elapsed = std::chrono::duration_cast<ms_t>(clock_t::now() - start);
-		std::cout << "Timer : [" << name << "] " << elapsed.count() << "ms." << std::endl;
+		print = false;
+		return elapsed.count();
+	}
+
+	~timer() {
+		if (print) {
+			const ms_t::rep ms = getElapsed();
+			std::cout << "Timer : [" << name << "] " << ms << "ms." << std::endl;
+		}
 	}
 };
 
@@ -52,9 +61,9 @@ int main(int, char *[]) {
 
 #if 1
 	/*
-	 * lists/1k.txt states: 964 / 8
-	 * lists/3k.txt states: 2621 / 89
-	 * lists/58k.txt states: 27025 / 47069
+	 * lists/1k.txt states: 964 / 1.5
+	 * lists/3k.txt states: 2621 / 6.2
+	 * lists/58k.txt states: 27025 / 182.9
 	 * lists/naughty.txt states: 925 / 0
 	 */
 	for (const std::string &file : files) {
@@ -64,15 +73,23 @@ int main(int, char *[]) {
 			continue;
 		}
 
-		Automata dict;
-		std::cout << "Building ..." << std::endl;
-		{
-			timer t("Building " + file);
-			dict.buildFromWordList(std::move(words));
+		timer::ms_t::rep total = 0;
+		const int repeat = 50;
+		for (int c = 0; c < repeat; c++) {
+			Automata dict;
+			{
+				timer t("");
+				dict.buildFromWordList(words);
+				total += t.getElapsed();
+			}
 		}
+		std::cout << "Time for " << file << ": " << (total / double(repeat)) << "ms." << std::endl;
+#if AC_ASSERT_ENABLED
+		Automata dict;
+		dict.buildFromWordList(words);
 		std::cout << "Verify: " << dict.runVerify() << std::endl;
-
 		std::cout << file << " states: " << dict.getNumberOfStates() << std::endl;
+#endif
 	}
 
 	return 0;
