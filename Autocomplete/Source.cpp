@@ -59,7 +59,7 @@ int main(int, char *[]) {
 		"lists/naughty.txt"
 	};
 
-#if 0
+#if 1
 	/*
 	 * lists/1k.txt states: 964 / 2.24
 	 * lists/3k.txt states: 2621 / 9.54
@@ -91,6 +91,8 @@ int main(int, char *[]) {
 		std::cout << file << " states: " << dict.getNumberOfStates() << std::endl;
 #endif
 	}
+
+	std::cout << "Collisions:" << Automata::collisions << std::endl;
 
 	return 0;
 #endif

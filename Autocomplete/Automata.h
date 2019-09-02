@@ -119,6 +119,9 @@ struct Automata {
 	Automata(const Automata &) = delete;
 	/// Disable operator=
 	Automata& operator=(const Automata &) = delete;
+
+	/// Count number of calls to State::slowEqual
+	static int64_t collisions;
 private:
 	/// Internal structure that holds a single state of the automata
 	struct State {
@@ -291,6 +294,7 @@ private:
 		bool operator==(const StatePtr &other) const {
 			ac_assert(state);
 			ac_assert(other.state);
+			++collisions;
 			return state->slowEqual(*automata, *other.state);
 		}
 
