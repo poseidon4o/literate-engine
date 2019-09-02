@@ -78,7 +78,7 @@ int main(int, char *[]) {
 	return 0;
 #endif
 
-	std::string &fileName = files[0];
+	std::string &fileName = files[1];
 	Automata dict;
 	{
 		Automata::WordList words;

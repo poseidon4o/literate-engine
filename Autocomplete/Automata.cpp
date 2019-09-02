@@ -290,14 +290,14 @@ bool Automata::State::isFinalState() const {
 void Automata::State::addConnection(symbol transition, State *child) {
 	ac_assert(connections.find(transition) == connections.end() && "Already exists");
 	connections[transition] = child;
-	rebuildConnectionsHash();
+	hashConnections = 42;
 }
 
 void Automata::State::appendSuffix(const Automata &automata, int wordIndex, int offset) {
 	const SuffixMap::const_iterator it = suffixes.find(wordIndex);
 	ac_assert(it == suffixes.end() && "Can't duplicate suffixes");
 	suffixes[wordIndex] = offset;
-	rebuildSuffixesHash(automata);
+	hashSuffixes = 42;
 }
 
 void Automata::State::initSuffixesFrom(const Automata &automata, const State &parent, symbol transition) {
@@ -308,13 +308,13 @@ void Automata::State::initSuffixesFrom(const Automata &automata, const State &pa
 			suffixes[item.first] = item.second + 1;
 		}
 	}
-	rebuildSuffixesHash(automata);
+	hashSuffixes = 42;
 }
 
 void Automata::State::replaceChild(State *newChild, symbol transition) {
 	ac_assert(connections.find(transition) != connections.end());
 	connections[transition] = newChild;
-	rebuildConnectionsHash();
+	hashConnections = 42;
 }
 
 bool Automata::State::hasChild(const State *state) const {
