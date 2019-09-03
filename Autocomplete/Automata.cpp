@@ -53,8 +53,6 @@ bool isPrefix(const std::string &prefix, const std::string &string) {
 
 }
 
-int64_t Automata::collisions = 0;
-
 Automata::Automata() {
 	initEmpty();
 }
@@ -418,31 +416,29 @@ void Automata::State::rebuildConnectionsHash() const {
 
 void Automata::State::rebuildSuffixesHash(const Automata &automata) const {
 	hashSuffixes = 42;
-	// xor =  12 822 586
-	// sort = 11 138 899
-	// sum =  11 316 897
 
+#if HASH_STRATEGY == HASH_STRATEGY_SUM
 	for (const auto &suffix : suffixes) {
 		const std::string &word = automata.getWord(suffix.wordIndex);
 		for (int c = suffix.offset; c < word.size(); c++) {
 			hashSuffixes += word[c];
 		}
 	}
+#endif
 
-#if 0
+#if HASH_STRATEGY == HASH_STRATEGY_XOR
 	for (const auto &suffix : suffixes) {
-		const std::string &word = automata.getWord(suffix.first);
+		const std::string &word = automata.getWord(suffix.wordIndex);
 		hashSuffixes ^= std::hash<std::string>()(word);
 	}
 #endif
 
-#if 0
+#if HASH_STRATEGY == HASH_STRATEGY_SORT
 	// Suffixes might not be in sorted order, so to compute consistent hashes sort them first
-	// TODO: change hash to not depend on order only on content
 	std::vector<std::string> suffixSet;
 	for (const auto &suffix : suffixes) {
-		const std::string &word = automata.getWord(suffix.first);
-		suffixSet.emplace_back(word.substr(suffix.second));
+		const std::string &word = automata.getWord(suffix.wordIndex);
+		suffixSet.emplace_back(word.substr(suffix.offset));
 	}
 	std::sort(suffixSet.begin(), suffixSet.end());
 

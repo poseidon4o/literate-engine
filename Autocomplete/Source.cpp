@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 		"lists/naughty.txt"
 	};
 
-	bool timeTest = false; // set to true to force time test
+	bool timeTest = true; // set to true to force time test
 	std::string overrideFile;
 
 	if (argc > 1) {
@@ -114,11 +114,13 @@ int main(int argc, char *argv[]) {
 
 	if (timeTest) {
 		/*
-		 * lists/1k.txt states: 964 / 2.24
-		 * lists/3k.txt states: 2621 / 9.54
-		 * lists/58k.txt states: 27025 / 228.12
+		 * lists/1k.txt states: 964 / 1
+		 * lists/3k.txt states: 2621 / 4.2
+		 * lists/58k.txt states: 27025 / 92.4
+		 * lists/370k.txt states: 160306 / 727.6
 		 * lists/naughty.txt states: 925 / 0
 		 */
+		int64_t collisions = 0;
 		for (const FileWithPath &pair : files) {
 			Automata::WordList words;
 			if (!readFileLines(pair, words)) {
@@ -135,6 +137,7 @@ int main(int argc, char *argv[]) {
 #else
 			timer::ms_t::rep total = 0;
 			const int repeat = 25;
+			int states = 0;
 			for (int c = 0; c < repeat; c++) {
 				Automata dict;
 				{
@@ -142,11 +145,14 @@ int main(int argc, char *argv[]) {
 					dict.buildFromWordList(words);
 					total += t.getElapsed();
 				}
+				collisions += dict.getBuildCollisions();
+				states = dict.getNumberOfStates();
 			}
+			std::cout << pair.path << " states " << states << std::endl;
 			std::cout << "Time for " << pair.path << ": " << (total / double(repeat)) << "ms." << std::endl;
 #endif
 		}
-		std::cout << "Collisions:" << Automata::collisions << std::endl;
+		std::cout << "Collisions: " << collisions << std::endl;
 
 		return 0;
 	}

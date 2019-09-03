@@ -23,6 +23,11 @@ typedef char symbol;
 #define ac_assert(test) ((void)0)
 #endif
 
+#define HASH_STRATEGY_XOR 1
+#define HASH_STRATEGY_SUM 2
+#define HASH_STRATEGY_SORT 3
+
+#define HASH_STRATEGY HASH_STRATEGY_SUM
 
 /// Interface used to dump the contents of the Automata's internal graph
 /// Edges are added explicitly and vertices are implicitly guessed from the edges, there are no unconnected vertices
@@ -120,8 +125,10 @@ struct Automata {
 	/// Disable operator=
 	Automata& operator=(const Automata &) = delete;
 
-	/// Count number of calls to State::slowEqual
-	static int64_t collisions;
+	/// Performance stat for building the collisions
+	int64_t getBuildCollisions() const {
+		return collisions;
+	}
 private:
 	/// Internal structure that holds a single state of the automata
 	struct State {
@@ -308,7 +315,7 @@ private:
 		bool operator==(const StatePtr &other) const {
 			ac_assert(state);
 			ac_assert(other.state);
-			++collisions;
+			++(automata->collisions);
 			return state->slowEqual(*automata, *other.state);
 		}
 
@@ -340,6 +347,9 @@ private:
 	DotGraphViz dotGraphViz;
 	/// The total number of symbols in all words
 	int totalSymbols = 0;
+	/// The number of times the has of State::getHash collided
+	/// Performance stats collected while building the automata
+	int64_t collisions = 0;
 
 	/// Builds the automata from the word list
 	void build();
