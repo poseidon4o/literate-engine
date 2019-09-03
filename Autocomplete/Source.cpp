@@ -1,18 +1,31 @@
 #include "Automata.h"
 
 #include <chrono>
+#include <sstream>
+#include <memory>
 
-bool readFileLines(const std::string &path, Automata::WordList &list) {
+
+typedef std::shared_ptr<std::istream> FilePtr;
+struct FileWithPath {
+	std::string path;
+	FilePtr file;
+	FileWithPath(std::string str, FilePtr file)
+		: path(std::move(str))
+		, file(std::move(file))
+	{}
+};
+
+bool readFileLines(const FileWithPath &file, Automata::WordList &list) {
 	list.clear();
-
-	std::ifstream wordFile(path);
-	if (!wordFile) {
+	if (!file.file) {
+		std::cerr << "Failed to read from " << file.path << std::endl;
 		return false;
 	}
+	file.file->seekg(0);
 
 	std::cout << "Reading ..." << std::endl;
 	std::string line;
-	while (getline(wordFile, line)) {
+	while (getline(*file.file, line)) {
 		while (!line.empty() && (line.back() == '\r' || line.back() == '\n')) {
 			line.pop_back();
 		}
@@ -51,68 +64,103 @@ struct timer {
 };
 
 
-int main(int, char *[]) {
-	std::string files[] = {
+int main(int argc, char *argv[]) {
+	std::vector<std::string> filePaths = {
 		"lists/1k.txt",
 		"lists/3k.txt",
 		"lists/58k.txt",
+#if !AC_ASSERT_ENABLED
+		// too slow for debug + assert
+		"lists/370k.txt",
+#endif
 		"lists/naughty.txt"
 	};
 
-#if 0
-	/*
-	 * lists/1k.txt states: 964 / 2.24
-	 * lists/3k.txt states: 2621 / 9.54
-	 * lists/58k.txt states: 27025 / 228.12
-	 * lists/naughty.txt states: 925 / 0
-	 */
-	for (const std::string &file : files) {
-		Automata::WordList words;
-		if (!readFileLines(file, words)) {
-			std::cout << "Failed to read " << file;
-			continue;
-		}
+	bool timeTest = false; // set to true to force time test
+	std::string overrideFile;
 
-		timer::ms_t::rep total = 0;
-		const int repeat = 25;
-		for (int c = 0; c < repeat; c++) {
-			Automata dict;
-			{
-				timer t("");
-				dict.buildFromWordList(words);
-				total += t.getElapsed();
+	if (argc > 1) {
+		for (int c = 1; c < argc; c++) {
+			const char *param = argv[c];
+			const bool hasMore = c + 1 < argc;
+			const char *next = hasMore ? argv[c + 1] : nullptr;
+			if (!strcmp(param, "--time")) {
+				timeTest = true;
+			} else if (!strcmp(param, "--file") && next) {
+				filePaths.clear();
+				filePaths.emplace_back(next);
 			}
 		}
-		std::cout << "Time for " << file << ": " << (total / double(repeat)) << "ms." << std::endl;
-#if AC_ASSERT_ENABLED
-		Automata dict;
-		dict.buildFromWordList(words);
-		std::cout << "Verify: " << dict.runVerify() << std::endl;
-		std::cout << file << " states: " << dict.getNumberOfStates() << std::endl;
-#endif
 	}
 
-	std::cout << "Collisions:" << Automata::collisions << std::endl;
+	std::vector<FileWithPath> files;
 
-	return 0;
+	if (filePaths.size() > 1) {
+		const std::vector<std::string> testWords = {
+			"follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
+			"test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te",
+			"aAZ", "bAB", "eAB", "eAZ",
+		};
+		std::unique_ptr<std::stringstream> fakeFile(new std::stringstream);
+		for (const std::string &word : testWords) {
+			(*fakeFile) << word << std::endl;
+		}
+		files.emplace_back("$fakeFile", std::move(fakeFile));
+	}
+
+	for (const std::string &fpath : filePaths) {
+		files.emplace_back(fpath, FilePtr(new std::ifstream(fpath)));
+	}
+
+	if (timeTest) {
+		/*
+		 * lists/1k.txt states: 964 / 2.24
+		 * lists/3k.txt states: 2621 / 9.54
+		 * lists/58k.txt states: 27025 / 228.12
+		 * lists/naughty.txt states: 925 / 0
+		 */
+		for (const FileWithPath &pair : files) {
+			Automata::WordList words;
+			if (!readFileLines(pair, words)) {
+				continue;
+			}
+#if AC_ASSERT_ENABLED
+			Automata dict;
+			std::cout << "Building..." << std::endl;
+			dict.buildFromWordList(words);
+			std::cout << "Verify: " << dict.runVerify() << std::endl;
+			std::cout << pair.path << " states: " << dict.getNumberOfStates() << std::endl;
+			std::cout << "Running tests ..." << std::endl;
+			ac_assert(dict.runVerify());
+#else
+			timer::ms_t::rep total = 0;
+			const int repeat = 25;
+			for (int c = 0; c < repeat; c++) {
+				Automata dict;
+				{
+					timer t("");
+					dict.buildFromWordList(words);
+					total += t.getElapsed();
+				}
+			}
+			std::cout << "Time for " << pair.path << ": " << (total / double(repeat)) << "ms." << std::endl;
 #endif
+		}
+		std::cout << "Collisions:" << Automata::collisions << std::endl;
 
-	std::string &fileName = files[2];
+		return 0;
+	}
+
+	const FileWithPath &file = files[0];
 	Automata dict;
 	{
 		Automata::WordList words;
-		if (!readFileLines(fileName, words)) {
-			std::cout << "Can't open file";
+		if (!readFileLines(file, words)) {
 			return 0;
 		}
 
 		std::cout << "Building ..." << std::endl;
-		std::vector<std::string> testWords = {
-			// "follow", "feast", "fear", "fart", "farting", "pestering", "pester", "testtest",
-			// "test", "tests", "testing", "tester", "teaser", "training", "pining", "test", "te",
-			// "aAZ", "bAB", "eAB", "eAZ",
-		};
-		dict.buildFromWordList(std::move(testWords.empty() ? words : testWords));
+		dict.buildFromWordList(std::move(words));
 
 		std::cout << "Writing graph-viz ..." << std::endl;
 		dict.dumpGraph(dict.getDefaultGraphDump("viz.dot"));
