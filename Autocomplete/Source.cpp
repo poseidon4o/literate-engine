@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 		"lists/naughty.txt"
 	};
 
-	bool timeTest = true; // set to true to force time test
+	bool timeTest = false; // set to true to force time test
 	std::string overrideFile;
 
 	if (argc > 1) {
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
 			ac_assert(dict.runVerify());
 #else
 			timer::ms_t::rep total = 0;
-			const int repeat = 25;
+			const int repeat = 50;
 			int states = 0;
 			for (int c = 0; c < repeat; c++) {
 				Automata dict;
