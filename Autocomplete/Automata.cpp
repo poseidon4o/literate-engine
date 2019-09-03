@@ -440,7 +440,7 @@ void Automata::State::rebuildSuffixesHash(const Automata &automata) const {
 #if HASH_STRATEGY == HASH_STRATEGY_XOR
 	for (const auto &suffix : suffixes) {
 		const std::string &word = automata.getWord(suffix.wordIndex);
-		hashSuffixes ^= std::hash<std::string>()(word);
+		hashSuffixes ^= hash(word.data() + suffix.offset, word.size() - suffix.offset);
 	}
 #endif
 
