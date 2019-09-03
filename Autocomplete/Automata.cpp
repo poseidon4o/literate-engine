@@ -291,12 +291,10 @@ void Automata::State::addConnection(symbol transition, State *child) {
 }
 
 void Automata::State::appendSuffix(const Automata &automata, int wordIndex, int offset) {
-	//const SuffixList::const_iterator it = suffixes.find(wordIndex);
 #if AC_ASSERT_ENABLED
 	const SuffixList::const_iterator it = std::find_if(suffixes.begin(), suffixes.end(), [wordIndex](const Suffix &suf) { return suf.wordIndex == wordIndex; });
 	ac_assert(it == suffixes.end() && "Can't duplicate suffixes");
 #endif
-	// suffixes[wordIndex] = offset;
 	suffixes.emplace_back(wordIndex, offset);
 	hashSuffixes = 42;
 }
@@ -307,7 +305,6 @@ void Automata::State::initSuffixesFrom(const Automata &automata, const State &pa
 		const std::string &word = automata.getWord(item.wordIndex);
 		if (word[item.offset] == transition && item.offset + 1 < word.length()) {
 			suffixes.emplace_back(item.wordIndex, item.offset + 1);
-			// suffixes[item.wordIndex] = item.offset+ 1;
 		}
 	}
 	hashSuffixes = 42;
