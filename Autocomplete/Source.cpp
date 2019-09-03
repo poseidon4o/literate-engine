@@ -63,6 +63,15 @@ struct timer {
 	}
 };
 
+const char *HELP_TEXT =
+"Autocomplete for a list of words separated by new line\n"
+"Arguments:\n"
+"--help		Display this help message and exit\n"
+#if !AC_ASSERT_ENABLED
+"--time		Use list of predefined files in ./lists to time the automata build time\n"
+#endif
+"--file [path]	Pass path to a file to load instead of the predefined one in subdir lists\n";
+
 
 int main(int argc, char *argv[]) {
 	std::vector<std::string> filePaths = {
@@ -84,11 +93,16 @@ int main(int argc, char *argv[]) {
 			const char *param = argv[c];
 			const bool hasMore = c + 1 < argc;
 			const char *next = hasMore ? argv[c + 1] : nullptr;
-			if (!strcmp(param, "--time")) {
-				timeTest = true;
-			} else if (!strcmp(param, "--file") && next) {
+			if (!strcmp(param, "--file") && next) {
 				filePaths.clear();
 				filePaths.emplace_back(next);
+#if !AC_ASSERT_ENABLED
+			} else if (!strcmp(param, "--time")) {
+				timeTest = true;
+#endif
+			} else if (!strcmp(param, "--help")) {
+				std::cout << HELP_TEXT << std::endl;
+				return 0;
 			}
 		}
 	}
