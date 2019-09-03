@@ -29,6 +29,13 @@ typedef char symbol;
 
 #define HASH_STRATEGY HASH_STRATEGY_SUM
 
+/// Utility to check if a set contains an element
+template <typename T>
+inline bool contains(const std::unordered_set<T> &set, const T &value) {
+	return set.find(value) != set.end();
+}
+
+
 /// Interface used to dump the contents of the Automata's internal graph
 /// Edges are added explicitly and vertices are implicitly guessed from the edges, there are no unconnected vertices
 struct GraphDump {
@@ -212,6 +219,12 @@ private:
 		/// Dump the graph starting at this state to a GraphDump, calls the same method for all connections
 		/// @param graphDump - implementation of GraphDump
 		void dumpGraph(GraphDump &graphDump) const;
+
+		/// Verify that the graph starting at this state is acyclic
+		/// when called on root state will check that there are no cycles in the whole automata
+		/// @param visited - set of all states visited to reach this one
+		/// @return true if no cycle found, false otherwise
+		bool verifyAcyclicity(std::unordered_set<const State *> &visited) const;
 
 		State() {
 			suffixes.reserve(32);

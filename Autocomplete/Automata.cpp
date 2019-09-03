@@ -1,5 +1,7 @@
 #include "Automata.h"
 
+#include <stack>
+
 namespace
 {
 
@@ -27,12 +29,6 @@ inline size_t hash(const char *data, int size) {
 	}
 
 	return hash;
-}
-
-/// Utility to check if a set contains an element
-template <typename T>
-inline bool contains(const std::unordered_set<T> &set, const T &value) {
-	return set.find(value) != set.end();
 }
 
 /// Check if a string is a prefix of another
@@ -175,6 +171,9 @@ bool Automata::runVerify() const {
 			}
 		}
 	}
+
+	std::unordered_set<const State *> visited;
+	rootState->verifyAcyclicity(visited);
 #endif
 	return true;
 }
@@ -397,6 +396,21 @@ void Automata::State::dumpGraph(GraphDump &graphDump) const {
 		graphDump.addEdge(mine, child.second->buildIdString(), std::string(1, child.first));
 		child.second->dumpGraph(graphDump);
 	}
+}
+
+bool Automata::State::verifyAcyclicity(std::unordered_set<const State *> &visited) const {
+	visited.insert(this);
+	for (const auto &item : connections) {
+		if (contains<const State *>(visited, item.second)) {
+			ac_assert(false && "Cycle detected");
+			return false;
+		}
+		if (!item.second->verifyAcyclicity(visited)) {
+			return false;
+		}
+	}
+	visited.erase(visited.find(this));
+	return true;
 }
 
 void Automata::State::rebuildConnectionsHash() const {
