@@ -56,9 +56,6 @@ struct GraphDump {
 
 /// The implementation of the automata recognizing the prefix/suffixes
 struct Automata {
-	/// Set of strings, used to obtain suffixes for a prefix
-	typedef std::set<std::string> StringSet;
-
 	/// List of words, used to initialize the automata
 	typedef std::vector<std::string> WordList;
 
@@ -95,7 +92,7 @@ struct Automata {
 	/// @param prefix - the prefix to search for
 	/// @param suffixes[out] - insert all suffixes for the prefix in the set
 	/// @return false if the prefix is not recognized, false otherwise
-	bool getSuffixes(const std::string &prefix, StringSet &suffixes) const;
+	bool getSuffixes(const std::string &prefix, WordList &suffixes) const;
 
 	/// Get the default implementation of GraphDump that will write the data in graph-viz format
 	/// @param filePath - the file path where the file will be created
@@ -205,7 +202,7 @@ private:
 		/// Get all suffixes starting from this state
 		/// @param automata - the automata as suffixes need to be obtained from the word list
 		/// @param stringSuffixes[out] - set where all suffixes will be inserted
-		void buildSuffixes(const Automata &automata, StringSet &stringSuffixes) const;
+		void buildSuffixes(const Automata &automata, WordList &stringSuffixes) const;
 
 		/// Clear all internal data for this state
 		void clear();

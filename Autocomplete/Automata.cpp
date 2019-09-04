@@ -104,13 +104,13 @@ const std::string &Automata::getWord(int index) const {
 	return words[index];
 }
 
-bool Automata::getSuffixes(const std::string &prefix, StringSet &suffixes) const {
+bool Automata::getSuffixes(const std::string &prefix, WordList &suffixes) const {
 	const State *start = findState(prefix);
 	if (!start) {
 		return false;
 	}
 	if (start->isFinalState()) {
-		suffixes.insert("");
+		suffixes.push_back("");
 	}
 	start->buildSuffixes(*this, suffixes);
 	return true;
@@ -139,8 +139,9 @@ bool Automata::verifyPrefix(int start, const std::string &prefix) const {
 		--start;
 	}
 
-	StringSet suffixes;
+	WordList suffixes;
 	(void)getSuffixes(prefix, suffixes);
+	std::sort(suffixes.begin(), suffixes.end());
 
 	for (const std::string &suffix : suffixes) {
 		if (prefix + suffix != words[start]) {
@@ -252,8 +253,9 @@ void Automata::minimize(State *start, int wordIndex, int offset) {
 	const Registry::iterator it = registry.find(ptr);
 	if (it != registry.end()) {
 		start->replaceChild(it->state, transition);
-		ac_assert(lastChild->slowEqual(*this, *it->state));
-		ac_assert(isDetached(lastChild));
+		// Those two checks make building the Automata in debug very slow
+		// ac_assert(lastChild->slowEqual(*this, *it->state));
+		// ac_assert(isDetached(lastChild));
 		ac_assert(lastChild->isFinalState() == it->state->isFinalState());
 
 		lastChild->clear();
@@ -339,10 +341,12 @@ int Automata::State::getNumChildren() const {
 	return connections.size();
 }
 
-void Automata::State::buildSuffixes(const Automata &automata, StringSet &stringSuffixes) const {
+void Automata::State::buildSuffixes(const Automata &automata, WordList &stringSuffixes) const {
+	stringSuffixes.reserve(stringSuffixes.size() + suffixes.size());
+
 	for (const auto &suffix : suffixes) {
 		const std::string &word = automata.getWord(suffix.wordIndex);
-		stringSuffixes.insert(word.substr(suffix.offset));
+		stringSuffixes.emplace_back(word.substr(suffix.offset));
 	}
 }
 
@@ -372,9 +376,11 @@ bool Automata::State::slowEqual(const Automata &automata, const State &other) co
 
 	// needed because "ing" can be present in both but it can be from different words
 	// suffixesHash depends only on the content so if the hash is the same, we need to handle collisions
-	StringSet mine, others;
+	WordList mine, others;
 	buildSuffixes(automata, mine);
 	other.buildSuffixes(automata, others);
+	std::sort(mine.begin(), mine.end());
+	std::sort(others.begin(), others.end());
 
 	return mine == others;
 }

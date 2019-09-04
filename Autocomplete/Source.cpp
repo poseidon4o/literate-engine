@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 		"lists/naughty.txt"
 	};
 
-	bool timeTest = false; // set to true to force time test
+	bool timeTest = true; // set to true to force time test
 	std::string overrideFile;
 
 	if (argc > 1) {
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]) {
 
 	std::cout << "Enter prefix: ";
 	while (std::cin >> input) {
-		std::set<std::string> suffixes;
+		Automata::WordList suffixes;
 		dict.getSuffixes(input, suffixes);
 
 		if (suffixes.empty()) {
