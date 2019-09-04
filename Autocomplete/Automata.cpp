@@ -342,11 +342,11 @@ int Automata::State::getNumChildren() const {
 }
 
 void Automata::State::buildSuffixes(const Automata &automata, WordList &stringSuffixes) const {
-	stringSuffixes.reserve(stringSuffixes.size() + suffixes.size());
-
+	int c = stringSuffixes.size();
+	stringSuffixes.resize(stringSuffixes.size() + suffixes.size());
 	for (const auto &suffix : suffixes) {
 		const std::string &word = automata.getWord(suffix.wordIndex);
-		stringSuffixes.emplace_back(word.substr(suffix.offset));
+		word.substr(suffix.offset).swap(stringSuffixes[c++]);
 	}
 }
 
@@ -370,19 +370,26 @@ bool Automata::State::slowEqual(const Automata &automata, const State &other) co
 		return false;
 	}
 
+	if (suffixes.size() != other.suffixes.size()) {
+		return false;
+	}
+
 	if (connections != other.connections) {
 		return false;
 	}
 
-	// needed because "ing" can be present in both but it can be from different words
-	// suffixesHash depends only on the content so if the hash is the same, we need to handle collisions
-	WordList mine, others;
+	static WordList mine, others;
 	buildSuffixes(automata, mine);
 	other.buildSuffixes(automata, others);
+
 	std::sort(mine.begin(), mine.end());
 	std::sort(others.begin(), others.end());
 
-	return mine == others;
+	const bool result = mine == others;
+	mine.resize(0);
+	others.resize(0);
+
+	return result;
 }
 
 std::string Automata::State::buildIdString() const {
